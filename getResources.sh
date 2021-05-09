@@ -52,7 +52,7 @@ elif [ -z "$1" ]; then
 	dcCount=`oc get dc -o name --no-headers | wc -l`
 	# Get Deployment count
 	depCount=`oc get deployment -o name --no-headers | wc -l`
-	echo -e 'Name Type ContN ReqCPU ReqMEM LimCPU LimMEM' > /tmp/$file
+	echo -e 'Name Type ContN ReqCPU ReqMEM LimitCPU LimitMEM' > /tmp/$file
 		# Check if there is a DC resource
 	if [ ! -z "$dcCount" ] || [ ! -z "$depCount" ]; then
 		# Loop between DC instances
