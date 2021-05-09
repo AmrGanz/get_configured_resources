@@ -3,7 +3,7 @@ file="temp_`date +%Y-%m-%d_%H:%M:%S`"
 if [ "$1" == "--all" ]; then
 	echo -e "Generating the required data from all of the namespaces...\n"
 	#Get projects names
-	projName=`oc get projects  -o jsonpath="{range .items[*].metadata}{.name}{'\n'}"`
+	projName=`oc get projects  -o jsonpath="{range .items[*].metadata}{.name}{'\n'}" | sed '/^[[:space:]]*$/d'`
 
 	#Get Projects count
 	projCount=`oc get projects  --no-headers -o name | wc -l`
@@ -23,14 +23,14 @@ if [ "$1" == "--all" ]; then
 		if [ ! -z "$dcCount" ] || [ ! -z "$depCount" ]; then
 			# Loop between DC instances
 			for (( i=0; i<$dcCount; i++ )); do
-				cont=`oc get dc -n $projName -o jsonpath="{range .items[$i].spec.template.spec.containers[*]}{.name}{'\n'}" | wc -l`
+				cont=`oc get dc -n $projName -o jsonpath="{range .items[$i].spec.template.spec.containers[*]}{.name}{'\n'}" | sed '/^[[:space:]]*$/d' | wc -l`
 				for (( x=0; x<$cont; x++ )); do
 					oc get dc -n $projName -o jsonpath="{.items[$i].metadata.namespace} {.items[$i].kind} {.items[$i].metadata.name} {.items[$i].spec.template.spec.containers[$x].name} {.items[$i].spec.template.spec.containers[$x].resources.requests.cpu} {.items[$i].spec.template.spec.containers[$x].resources.requests.memory} {.items[$i].spec.template.spec.containers[$x].resources.limits.cpu} {.items[$i].spec.template.spec.containers[$x].resources.limits.memory}{'\n'}" >> /tmp/$file
 				done
 			done
 		# Loop between Deployment instances
 			for (( i=0; i<$depCount; i++ )); do
-				cont=`oc get deployment -n $projName -o jsonpath="{range .items[$i].spec.template.spec.containers[*]}{.name}{'\n'}" | wc -l`
+				cont=`oc get deployment -n $projName -o jsonpath="{range .items[$i].spec.template.spec.containers[*]}{.name}{'\n'}" | sed '/^[[:space:]]*$/d' | wc -l`
 				for (( x=0; x<$cont; x++ )); do
 					oc get deployment -n $projName -o jsonpath="{.items[$i].metadata.namespace} {.items[$i].kind} {.items[$i].metadata.name} {.items[$i].spec.template.spec.containers[$x].name} {.items[$i].spec.template.spec.containers[$x].resources.requests.cpu} {.items[$i].spec.template.spec.containers[$x].resources.requests.memory} {.items[$i].spec.template.spec.containers[$x].resources.limits.cpu} {.items[$i].spec.template.spec.containers[$x].resources.limits.memory}{'\n'}" >> /tmp/$file
 				done
@@ -45,6 +45,7 @@ elif [ "$1" == "--help" ]; then
 	echo -e "Options: \n --help: Show help \n --all: Gather data from all of the namespaces \n <name>: Gather data from specific namespace \n No argument: Gather data from current namespace"
 
 elif [ -z "$1" ]; then
+	echo "no project is selected"
 	currentProjName=`oc project -q`
 	echo -e "Generating the required data for namespace: $currentProjName\n"
 	# Get Deploymentconfig count
@@ -56,14 +57,14 @@ elif [ -z "$1" ]; then
 	if [ ! -z "$dcCount" ] || [ ! -z "$depCount" ]; then
 		# Loop between DC instances
 		for (( i=0; i<$dcCount; i++ )); do
-			cont=`oc get dc -o jsonpath="{range .items[$i].spec.template.spec.containers[*]}{.name}{'\n'}" | wc -l`
+			cont=`oc get dc -o jsonpath="{range .items[$i].spec.template.spec.containers[*]}{.name}{'\n'}" | sed '/^[[:space:]]*$/d' | wc -l`
 			for (( x=0; x<$cont; x++ )); do
 				oc get dc -o jsonpath="{.items[$i].metadata.name} {.items[$i].kind} {.items[$i].spec.template.spec.containers[$x].name} {.items[$i].spec.template.spec.containers[$x].resources.requests.cpu} {.items[$i].spec.template.spec.containers[$x].resources.requests.memory} {.items[$i].spec.template.spec.containers[$x].resources.limits.cpu} {.items[$i].spec.template.spec.containers[$x].resources.limits.memory}{'\n'}" >> /tmp/$file
 			done
 		done
-	# Loop between Deployment instances
+		# Loop between Deployment instances
 		for (( i=0; i<$depCount; i++ )); do
-			cont=`oc get deployment -o jsonpath="{range .items[$i].spec.template.spec.containers[*]}{.name}{'\n'}" | wc -l`
+			cont=`oc get deployment -o jsonpath="{range .items[$i].spec.template.spec.containers[*]}{.name}{'\n'}" | sed '/^[[:space:]]*$/d' | wc -l`
 			for (( x=0; x<$cont; x++ )); do
 				oc get deployment -o jsonpath="{.items[$i].metadata.name} {.items[$i].kind} {.items[$i].spec.template.spec.containers[$x].name} {.items[$i].spec.template.spec.containers[$x].resources.requests.cpu} {.items[$i].spec.template.spec.containers[$x].resources.requests.memory} {.items[$i].spec.template.spec.containers[$x].resources.limits.cpu} {.items[$i].spec.template.spec.containers[$x].resources.limits.memory}{'\n'}" >> /tmp/$file
 			done
@@ -83,14 +84,14 @@ elif [ ! -z "$1" ] && oc get project $1 &> /dev/null ; then
         if [ ! -z "$dcCount" ] || [ ! -z "$depCount" ]; then
                 # Loop between DC instances
                 for (( i=0; i<$dcCount; i++ )); do
-                        cont=`oc get dc -n $1 -o jsonpath="{range .items[$i].spec.template.spec.containers[*]}{.name}{'\n'}" | wc -l`
+                        cont=`oc get dc -n $1 -o jsonpath="{range .items[$i].spec.template.spec.containers[*]}{.name}{'\n'}" | sed '/^[[:space:]]*$/d' | wc -l`
                         for (( x=0; x<$cont; x++ )); do
                                 oc get dc -n $1 -o jsonpath="{.items[$i].metadata.namespace} {.items[$i].kind} {.items[$i].metadata.name} {.items[$i].spec.template.spec.containers[$x].name} {.items[$i].spec.template.spec.containers[$x].resources.requests.cpu} {.items[$i].spec.template.spec.containers[$x].resources.requests.memory} {.items[$i].spec.template.spec.containers[$x].resources.limits.cpu} {.items[$i].spec.template.spec.containers[$x].resources.limits.memory}{'\n'}" >> /tmp/$file
                         done
                 done
         # Loop between Deployment instances
                 for (( i=0; i<$depCount; i++ )); do
-                        cont=`oc get deployment -n $1 -o jsonpath="{range .items[$i].spec.template.spec.containers[*]}{.name}{'\n'}" | wc -l`
+                        cont=`oc get deployment -n $1 -o jsonpath="{range .items[$i].spec.template.spec.containers[*]}{.name}{'\n'}" | sed '/^[[:space:]]*$/d' | wc -l`
                         for (( x=0; x<$cont; x++ )); do
                                 oc get deployment -n $1 -o jsonpath="{.items[$i].metadata.namespace} {.items[$i].kind} {.items[$i].metadata.name} {.items[$i].spec.template.spec.containers[$x].name} {.items[$i].spec.template.spec.containers[$x].resources.requests.cpu} {.items[$i].spec.template.spec.containers[$x].resources.requests.memory} {.items[$i].spec.template.spec.containers[$x].resources.limits.cpu} {.items[$i].spec.template.spec.containers[$x].resources.limits.memory}{'\n'}" >> /tmp/$file 
                         done
