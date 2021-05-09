@@ -1,7 +1,7 @@
 file="temp_`date +%Y-%m-%d_%H:%M:%S`"
 
 if [ "$1" == "--all" ]; then
-	echo -e "Generating the required data from all of the namespaces...\n"
+	echo -e "Generating the required data from all of the namespaces, it will take few seconds...\n"
 	#Get projects names
 	projName=`oc get projects  -o jsonpath="{range .items[*].metadata}{.name}{'\n'}" | sed '/^[[:space:]]*$/d'`
 
